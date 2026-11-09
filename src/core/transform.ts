@@ -193,18 +193,20 @@ export function transformFromBytes(
     });
   }
 
+  if (
+    output.length > 0 &&
+    output.length < minimum &&
+    separator !== "" &&
+    !output.endsWith(separator) &&
+    output.length + 1 < minimum
+  ) {
+    output += separator;
+  }
+
+  const paddingAlphabet =
+    separator === "" ? PADDING_ALPHABET : PADDING_ALPHABET.replace(separator, "");
   while (output.length < minimum) {
-    const canAddSeparator =
-      output.length > 0 &&
-      separator !== "" &&
-      !output.endsWith(separator) &&
-      output.length + 1 < minimum;
-    if (canAddSeparator) {
-      output += separator;
-    } else {
-      output +=
-        PADDING_ALPHABET[stream.nextIndex(PADDING_ALPHABET.length)];
-    }
+    output += paddingAlphabet[stream.nextIndex(paddingAlphabet.length)];
   }
 
   if (separator !== "" && output.endsWith(separator)) {

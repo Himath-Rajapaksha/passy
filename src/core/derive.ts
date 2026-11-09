@@ -15,7 +15,7 @@ export async function deriveSeed(
     ["deriveBits"],
   );
   const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    { name: "PBKDF2", salt: salt as BufferSource, iterations, hash: "SHA-256" },
     key,
     256,
   );
@@ -30,9 +30,13 @@ export async function expandKeystream(
     throw new RangeError(`Keystream length must be 0..${MAX_HKDF_BYTES}`);
   }
   if (length === 0) return new Uint8Array(0);
-  const key = await crypto.subtle.importKey("raw", seed, "HKDF", false, [
-    "deriveBits",
-  ]);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    seed as BufferSource,
+    "HKDF",
+    false,
+    ["deriveBits"],
+  );
   const bits = await crypto.subtle.deriveBits(
     {
       name: "HKDF",
