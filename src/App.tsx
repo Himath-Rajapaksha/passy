@@ -1,13 +1,10 @@
 import { useEffect, useId, useState } from "react";
+import AdvancedPanel from "./components/AdvancedPanel";
 import ClassChips from "./components/ClassChips";
 import PasswordOutput from "./components/PasswordOutput";
 import { DEFAULT_MIN_LENGTH } from "./core/constants";
 import { generatePassword } from "./core/generate";
-import type {
-  GenerateOptions,
-  GenerateResult,
-  Separator,
-} from "./core/types";
+import type { GenerateResult, Mode, Separator } from "./core/types";
 
 const DEBOUNCE_MS = 200;
 
@@ -27,12 +24,14 @@ function failureMessage(result: GenerateResult | null): string | null {
 
 export default function App() {
   const phraseId = useId();
+  const siteId = useId();
   const [phrase, setPhrase] = useState("");
-  const [site] = useState("");
-  const [secret] = useState("");
-  const [minLength] = useState(DEFAULT_MIN_LENGTH);
-  const [separator] = useState<Separator>("-");
-  const [mode] = useState<GenerateOptions["mode"]>("reproducible");
+  const [site, setSite] = useState("");
+  const [secret, setSecret] = useState("");
+  const [minLength, setMinLength] = useState(DEFAULT_MIN_LENGTH);
+  const [separator, setSeparator] = useState<Separator>("-");
+  const [mode, setMode] = useState<Mode>("reproducible");
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [deriving, setDeriving] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -135,6 +134,36 @@ export default function App() {
             </p>
           </section>
 
+          <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
+            <label
+              htmlFor={siteId}
+              className="block text-base font-semibold text-stone-900"
+            >
+              Site or app (recommended)
+            </label>
+            <input
+              id={siteId}
+              type="text"
+              value={site}
+              onChange={(event) => setSite(event.target.value)}
+              maxLength={64}
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              className="mt-2 block min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-lg text-stone-900 shadow-inner outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/30"
+              placeholder="hobby forum"
+            />
+            <p className="mt-2 text-sm text-stone-600">
+              The same phrase gives a different password on each site.
+            </p>
+            {phrase.trim() !== "" && site.trim() === "" && (
+              <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                Add a site name so the same phrase doesn't give the same
+                password everywhere.
+              </p>
+            )}
+          </section>
+
           <PasswordOutput
             password={password}
             length={length}
@@ -148,6 +177,19 @@ export default function App() {
           />
 
           <ClassChips classes={result?.ok ? result.classes : null} />
+
+          <AdvancedPanel
+            open={advancedOpen}
+            onOpenChange={setAdvancedOpen}
+            minLength={minLength}
+            onMinLengthChange={setMinLength}
+            separator={separator}
+            onSeparatorChange={setSeparator}
+            mode={mode}
+            onModeChange={setMode}
+            secret={secret}
+            onSecretChange={setSecret}
+          />
 
           {message && (
             <p
