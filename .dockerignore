@@ -1,0 +1,13 @@
+node_modules
+dist
+server/.venv
+**/__pycache__
+**/.pytest_cache
+.git
+.gitignore
+.superpowers
+playwright-report
+test-results
+tests
+e2e
+docs
