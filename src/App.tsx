@@ -1,12 +1,16 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import AdvancedPanel from "./components/AdvancedPanel";
 import ClassChips from "./components/ClassChips";
 import PasswordOutput from "./components/PasswordOutput";
+import RandomMode from "./components/RandomMode";
+import StrengthMeter from "./components/StrengthMeter";
 import { DEFAULT_MIN_LENGTH } from "./core/constants";
 import { generatePassword } from "./core/generate";
 import type { GenerateResult, Mode, Separator } from "./core/types";
 
 const DEBOUNCE_MS = 200;
+
+type ModeTab = "phrase" | "random";
 
 function failureMessage(result: GenerateResult | null): string | null {
   if (!result || result.ok) return null;
@@ -25,6 +29,13 @@ function failureMessage(result: GenerateResult | null): string | null {
 export default function App() {
   const phraseId = useId();
   const siteId = useId();
+  const phraseTabId = useId();
+  const phrasePanelId = useId();
+  const randomTabId = useId();
+  const randomPanelId = useId();
+  const phraseTabRef = useRef<HTMLButtonElement>(null);
+  const randomTabRef = useRef<HTMLButtonElement>(null);
+  const [tab, setTab] = useState<ModeTab>("phrase");
   const [phrase, setPhrase] = useState("");
   const [site, setSite] = useState("");
   const [secret, setSecret] = useState("");
@@ -90,6 +101,14 @@ export default function App() {
     }
   }
 
+  function activateTab(next: ModeTab, moveFocus = false) {
+    setTab(next);
+    if (moveFocus) {
+      const target = next === "phrase" ? phraseTabRef : randomTabRef;
+      target.current?.focus();
+    }
+  }
+
   return (
     <div className="min-h-screen bg-stone-50">
       <main className="mx-auto w-full max-w-2xl px-4 py-10 sm:py-16">
@@ -109,7 +128,70 @@ export default function App() {
           </p>
         </header>
 
-        <div className="space-y-5">
+        <div
+          role="tablist"
+          aria-label="Password mode"
+          onKeyDown={(event) => {
+            if (
+              event.key === "ArrowLeft" ||
+              event.key === "ArrowRight" ||
+              event.key === "Home" ||
+              event.key === "End"
+            ) {
+              event.preventDefault();
+              activateTab(
+                event.key === "ArrowLeft" || event.key === "Home"
+                  ? "phrase"
+                  : "random",
+                true,
+              );
+            }
+          }}
+          className="grid grid-cols-2 gap-1 rounded-xl bg-stone-200/80 p-1"
+        >
+          <button
+            ref={phraseTabRef}
+            type="button"
+            role="tab"
+            id={phraseTabId}
+            aria-selected={tab === "phrase"}
+            aria-controls={phrasePanelId}
+            tabIndex={tab === "phrase" ? 0 : -1}
+            onClick={() => activateTab("phrase")}
+            className={`min-h-11 rounded-lg px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 ${
+              tab === "phrase"
+                ? "bg-white text-stone-900 shadow-sm"
+                : "text-stone-600 hover:text-stone-900"
+            }`}
+          >
+            Phrase
+          </button>
+          <button
+            ref={randomTabRef}
+            type="button"
+            role="tab"
+            id={randomTabId}
+            aria-selected={tab === "random"}
+            aria-controls={randomPanelId}
+            tabIndex={tab === "random" ? 0 : -1}
+            onClick={() => activateTab("random")}
+            className={`min-h-11 rounded-lg px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 ${
+              tab === "random"
+                ? "bg-white text-stone-900 shadow-sm"
+                : "text-stone-600 hover:text-stone-900"
+            }`}
+          >
+            Random
+          </button>
+        </div>
+
+        {tab === "phrase" ? (
+          <div
+            role="tabpanel"
+            id={phrasePanelId}
+            aria-label="Mnemonic password"
+            className="mt-5 space-y-5"
+          >
           <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
             <label
               htmlFor={phraseId}
@@ -178,6 +260,8 @@ export default function App() {
 
           <ClassChips classes={result?.ok ? result.classes : null} />
 
+          <StrengthMeter phrase={phrase} />
+
           <AdvancedPanel
             open={advancedOpen}
             onOpenChange={setAdvancedOpen}
@@ -206,7 +290,17 @@ export default function App() {
             </strong>{" "}
             Use a password manager for email, banking, and work accounts.
           </p>
-        </div>
+          </div>
+        ) : (
+          <div
+            role="tabpanel"
+            id={randomPanelId}
+            aria-label="Random password"
+            className="mt-5 space-y-5"
+          >
+            <RandomMode />
+          </div>
+        )}
       </main>
     </div>
   );
