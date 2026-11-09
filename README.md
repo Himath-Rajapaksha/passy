@@ -36,7 +36,7 @@ generated password are never sent, logged, or stored by the app.
 - No `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, or `Math.random` in
   application source. `tests/security/static-guards.test.ts` enforces this.
 - No phrase or password is written to storage, URLs, or attributes.
-- The only post-load network request is the same-origin lazy chunk for the
+- The only post-load network requests are the same-origin lazy chunks for the
   strength estimator. The CSP sets `connect-src 'none'`.
 - The meta CSP also sets `default-src 'self'`, `script-src 'self'`,
   `form-action 'none'`, and `base-uri 'none'`. The FastAPI host adds
@@ -160,10 +160,12 @@ src/components/    password output, class chips, advanced panel,
 server/            FastAPI static host and health check
 tests/             Vitest unit, UI, and security tests
 e2e/               Playwright browser tests
-docs/superpowers/  product spec and implementation plan
+docs/              product requirements (PRD)
+docs/superpowers/  detailed design spec and implementation plan
 ```
 
-The binding product and security spec is
+The product requirements and scope are defined in `docs/PRD.md`. The detailed
+algorithm and security design is
 `docs/superpowers/specs/2026-11-09-mnemonic-password-generator-design.md`.
 The implementation plan is
 `docs/superpowers/plans/2026-11-09-mnemonic-password-generator.md`.
