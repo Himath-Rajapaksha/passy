@@ -7,3 +7,5 @@ test-results/
 server/.venv/
 __pycache__/
 .pytest_cache/
+
+*.tsbuildinfo

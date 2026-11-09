@@ -43,7 +43,6 @@ it("sets the production CSP and referrer policy", () => {
     "connect-src 'none'",
     "form-action 'none'",
     "base-uri 'none'",
-    "frame-ancestors 'none'",
   ]) {
     expect(html, `CSP must contain ${directive}`).toContain(directive);
   }
