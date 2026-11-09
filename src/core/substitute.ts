@@ -4,12 +4,11 @@ import type { Separator } from "./types";
 
 const ASCII_LETTER_OR_DIGIT = /^[A-Za-z0-9]$/;
 
-export function substitute(
+export function substituteWithStream(
   phrase: string,
   separator: Separator,
-  bytes: Uint8Array,
+  stream: ByteStream,
 ): string {
-  const stream = new ByteStream(bytes);
   let output = "";
 
   for (const character of phrase) {
@@ -22,8 +21,7 @@ export function substitute(
     const candidates = CANDIDATE_MAP[lower];
     if (candidates) {
       const candidate = candidates[stream.nextIndex(candidates.length)];
-      output +=
-        character !== lower ? candidate.toUpperCase() : candidate;
+      output += character !== lower ? candidate.toUpperCase() : candidate;
       continue;
     }
 
@@ -41,4 +39,12 @@ export function substitute(
   }
 
   return output;
+}
+
+export function substitute(
+  phrase: string,
+  separator: Separator,
+  bytes: Uint8Array,
+): string {
+  return substituteWithStream(phrase, separator, new ByteStream(bytes));
 }
