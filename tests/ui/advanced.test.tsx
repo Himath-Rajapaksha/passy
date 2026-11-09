@@ -54,6 +54,16 @@ it("labels session-random as not reproducible", async () => {
   await user.click(screen.getByLabelText(/session-random/i));
   expect(screen.getByText(/not reproducible/i)).toBeInTheDocument();
 });
+it("keeps the session-random warning visible after collapsing advanced", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole("button", { name: /advanced/i }));
+  await user.click(screen.getByLabelText(/session-random/i));
+  await user.click(screen.getByRole("button", { name: /advanced/i }));
+  expect(
+    screen.getByText(/reloading the page gives a different one/i),
+  ).toBeInTheDocument();
+});
 it("clamps the minimum length and passes separator changes", async () => {
   const user = userEvent.setup();
   render(<App />);

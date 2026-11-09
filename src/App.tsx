@@ -258,6 +258,16 @@ export default function App() {
             onCopy={() => void handleCopy()}
           />
 
+          {mode === "session-random" && (
+            <p
+              role="status"
+              className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
+            >
+              <strong className="font-semibold">Session-random mode.</strong>{" "}
+              Save this password now: reloading the page gives a different one.
+            </p>
+          )}
+
           <ClassChips classes={result?.ok ? result.classes : null} />
 
           <StrengthMeter phrase={phrase} />

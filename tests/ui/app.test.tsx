@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import App from "../../src/App";
@@ -38,6 +38,22 @@ it("shows output after typing and clears it when the phrase is cleared", async (
   ).toBeInTheDocument();
   await user.clear(input);
   expect(screen.queryByText("p@$$w0rd-9K#mT7x")).not.toBeInTheDocument();
+});
+it("disables copy while a fresh password is deriving", async () => {
+  let resolve!: (value: typeof mockResult) => void;
+  mockedGenerate.mockReturnValue(
+    new Promise((done) => {
+      resolve = done;
+    }),
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.type(screen.getByLabelText(/phrase you'll remember/i), "password");
+  const copy = screen.getByRole("button", { name: /copy password/i });
+  await waitFor(() => expect(mockedGenerate).toHaveBeenCalled());
+  expect(copy).toBeDisabled();
+  resolve(mockResult);
+  await waitFor(() => expect(copy).toBeEnabled());
 });
 it("copies the password on user action", async () => {
   const user = userEvent.setup();

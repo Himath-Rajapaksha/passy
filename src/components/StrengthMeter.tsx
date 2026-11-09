@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { estimateStrength, type StrengthResult } from "../core/entropy";
 
-type Status = "idle" | "loading" | "ready";
+const STRENGTH_DEBOUNCE_MS = 300;
+
+type Status = "idle" | "loading" | "ready" | "error";
 
 export default function StrengthMeter({ phrase }: { phrase: string }) {
   const [status, setStatus] = useState<Status>("idle");
@@ -18,19 +20,23 @@ export default function StrengthMeter({ phrase }: { phrase: string }) {
     setStatus("loading");
     setStrength(null);
 
-    estimateStrength(phrase)
-      .then((result) => {
-        if (ignore) return;
-        setStrength(result);
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (ignore) return;
-        setStatus("idle");
-      });
+    const timer = window.setTimeout(() => {
+      estimateStrength(phrase)
+        .then((result) => {
+          if (ignore) return;
+          setStrength(result);
+          setStatus("ready");
+        })
+        .catch(() => {
+          if (ignore) return;
+          setStrength(null);
+          setStatus("error");
+        });
+    }, STRENGTH_DEBOUNCE_MS);
 
     return () => {
       ignore = true;
+      window.clearTimeout(timer);
     };
   }, [phrase]);
 
@@ -49,16 +55,17 @@ export default function StrengthMeter({ phrase }: { phrase: string }) {
           Source strength
         </h2>
         <p
-          aria-live="polite"
           className={`text-sm font-semibold ${
             strength?.warning ? "text-amber-900" : "text-stone-700"
           }`}
         >
           {status === "loading"
             ? "Estimating…"
-            : status === "ready" && strength
-              ? strength.label
-              : "Waiting for a phrase"}
+            : status === "error"
+              ? "Strength unavailable"
+              : status === "ready" && strength
+                ? strength.label
+                : "Waiting for a phrase"}
         </p>
       </div>
 

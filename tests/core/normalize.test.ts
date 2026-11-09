@@ -20,6 +20,11 @@ describe("normalizePhrase", () => {
     expect(Array.from(result.value)).toHaveLength(256);
     expect(result.truncated).toBe(true);
   });
+  it("reports truncation caused by NFKC expansion", () => {
+    const result = normalizePhrase("ﬁ".repeat(200));
+    expect(Array.from(result.value)).toHaveLength(256);
+    expect(result.truncated).toBe(true);
+  });
 });
 
 describe("normalizeSite", () => {

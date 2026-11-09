@@ -67,8 +67,9 @@ function cleanToAscii(raw: string, cap: number): {
   }
 
   kept = kept.replace(/\s+/gu, " ").trim();
+  const expandedPastCap = Array.from(kept).length > cap;
   kept = capCodePoints(kept, cap);
-  return { value: kept, removed, truncated };
+  return { value: kept, removed, truncated: truncated || expandedPastCap };
 }
 
 export function normalizePhrase(raw: string): {

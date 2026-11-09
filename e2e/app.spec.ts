@@ -113,6 +113,27 @@ test("mobile layout has no horizontal scroll", async ({ page }) => {
   expect(overflow).toBe(false);
 });
 
+test("keeps the phrase out of network requests", async ({ page }) => {
+  const urls: string[] = [];
+  page.on("request", (request) => urls.push(request.url()));
+
+  await page.goto("/");
+  const phrase = "blue fox drinks coffee";
+  await page.getByLabel(/phrase you'll remember/i).fill(phrase);
+  await expect(page.getByTestId("password-output")).toHaveText(OUTPUT_PATTERN);
+  await page.waitForTimeout(500);
+
+  const foreign = urls.filter((url) => {
+    if (url.startsWith("data:") || url.startsWith("blob:")) return false;
+    const target = new URL(url);
+    return target.hostname !== "127.0.0.1" || target.port !== "4173";
+  });
+  expect(foreign).toEqual([]);
+  expect(
+    urls.filter((url) => decodeURIComponent(url).includes(phrase)),
+  ).toEqual([]);
+});
+
 test("keyboard flow moves between modes", async ({ page }) => {
   await page.goto("/");
   const phraseTab = page.getByRole("tab", { name: /phrase/i });

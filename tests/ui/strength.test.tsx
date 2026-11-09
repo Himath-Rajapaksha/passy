@@ -47,6 +47,14 @@ it("waits for strength estimation before showing a label", async () => {
   expect(await screen.findByText(/^weak$/i)).toBeInTheDocument();
 });
 
+it("shows an unavailable label when estimation fails", async () => {
+  mockedEstimate.mockRejectedValue(new Error("chunk failed"));
+  const user = userEvent.setup();
+  render(<App />);
+  await user.type(screen.getByLabelText(/phrase/i), "password");
+  expect(await screen.findByText(/strength unavailable/i)).toBeInTheDocument();
+});
+
 it("keeps the memorable-not-strong warning visible", async () => {
   render(<App />);
   expect(
